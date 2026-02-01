@@ -1,0 +1,94 @@
+#include <iostream>
+using namespace std;
+
+class BST {
+    class Node {
+    public:
+        int data;
+        Node* small, * large;
+        Node(int d) {
+            data = d;
+            small = nullptr;
+            large = nullptr;
+        }
+    };
+    Node* root;
+    Node* insert(Node* root, int d) {
+        if (!root) {
+            return new Node(d);
+        }
+        if (d < root->data) {
+            root->small = insert(root->small, d);
+        };
+        if (d > root->data) {
+            root->large = insert(root->large, d);
+        }
+        return root;
+    }
+    Node* findMin(Node* root) {
+        while (root && root->small) {
+            root = root->small;
+        }
+        return root;
+    }
+    Node* deleteNode(Node * root,int d) {
+        if (!root) {
+            return root; //no root found - hence same returned
+        }
+        if (d < root->data) { //if data is less than root ->data
+            root->small = deleteNode(root->small, d);
+        }
+        else if (d > root->data) { //if data is greater than root -> data - iterate to the largest root
+            root->large = deleteNode(root->large, d);
+        }
+        else {
+            if (!root->small) { //if node does not have a smaller value
+                Node* temp = root->large; //preserve the larger value
+                delete root; // delete the root;
+                return temp; //return the preserved node
+            }
+            else if (!root->large) { //if node does not have a larger value
+                Node* temp = root->small; // preserve the smaller value;
+                delete root; //delete the root
+                return temp; //return the preserved value;
+            }
+            Node* temp = findMin(root); //find the inorder successor
+            root->data = temp->data; //copy the value of inorder success to the root 
+            root->large = deleteNode(root->large, temp->data); //delete the duplicate node from the BST having the data we were deleting
+        }
+        return root;
+    }
+    void inOrder(Node*root) {
+        if (!root) {
+            return ;
+        }
+        inOrder(root->small);
+        cout << root->data << " ";
+        inOrder(root->large);
+
+    }
+public:
+    BST() {
+        root = nullptr;
+    }
+    void push(int d) {
+        root = insert(root, d);
+    }
+    void pop(int d) {
+        root = deleteNode(root, d);
+    }
+    void print() {
+        inOrder(root);
+    }
+};
+
+int main()
+{
+    BST b;
+    b.push(10);
+    b.push(20);
+    b.push(30);
+    b.pop(20);
+    b.print();
+}
+
