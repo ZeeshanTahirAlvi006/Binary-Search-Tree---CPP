@@ -1,4 +1,5 @@
 #include <iostream>
+#include<queue>
 using namespace std;
 
 class BST {
@@ -31,33 +32,39 @@ class BST {
         }
         return root;
     }
-    Node* deleteNode(Node * root,int d) {
-        if (!root) {
-            return root; //no root found - hence same returned
-        }
-        if (d < root->data) { //if data is less than root ->data
-            root->small = deleteNode(root->small, d);
-        }
-        else if (d > root->data) { //if data is greater than root -> data - iterate to the largest root
-            root->large = deleteNode(root->large, d);
-        }
-        else {
-            if (!root->small) { //if node does not have a smaller value
-                Node* temp = root->large; //preserve the larger value
-                delete root; // delete the root;
-                return temp; //return the preserved node
-            }
-            else if (!root->large) { //if node does not have a larger value
-                Node* temp = root->small; // preserve the smaller value;
-                delete root; //delete the root
-                return temp; //return the preserved value;
-            }
-            Node* temp = findMin(root); //find the inorder successor
-            root->data = temp->data; //copy the value of inorder success to the root 
-            root->large = deleteNode(root->large, temp->data); //delete the duplicate node from the BST having the data we were deleting
+    Node* findMax(Node* root) {
+        if (root && root->large) {
+            root = root->large;
         }
         return root;
     }
+        Node* deleteNode(Node * root,int d) {
+            if (!root) {
+                return root; //no root found - hence same returned
+            }
+            if (d < root->data) { //if data is less than root ->data
+                root->small = deleteNode(root->small, d);
+            }
+            else if (d > root->data) { //if data is greater than root -> data - iterate to the largest root
+                root->large = deleteNode(root->large, d);
+            }
+            else { // when the root(node) is found
+                if (!root->small) { //if node does not have a smaller value
+                    Node* temp = root->large; //preserve the larger value
+                    delete root; // delete the root;
+                    return temp; //return the preserved node
+                }
+                else if (!root->large) { //if node does not have a larger value
+                    Node* temp = root->small; // preserve the smaller value;
+                    delete root; //delete the root
+                    return temp; //return the preserved value;
+                }
+                Node* temp = findMin(root->large); //find the inorder successor
+                root->data = temp->data; //copy the value of inorder successor to the root 
+                root->large = deleteNode(root->large, temp->data); //delete the duplicate node from the BST having the data we were deleting
+            }
+            return root;
+        }
     void inOrder(Node*root) {
         if (!root) {
             return ;
@@ -66,6 +73,96 @@ class BST {
         cout << root->data << " ";
         inOrder(root->large);
 
+    }
+    void preOrder(Node* root) {
+        if (!root) {
+            return;
+        }
+        preOrder(root->small);
+        preOrder(root->large);
+        cout << root->data << " ";
+    }
+    void postOrder(Node* root) {
+        if (!root) {
+            return;
+        }
+        cout << root->data << " ";
+        preOrder(root->small);
+        preOrder(root->large);
+    }
+    void BFS(Node * root) {
+        if (!root) { return; }
+        queue<Node*> q;
+        q.push(root);
+        while (!q.empty()) {
+            Node* curr = q.front();
+            q.pop();
+            cout << curr->data << " ";
+            if (curr->small) {
+                q.push(curr->small);
+            }
+            if (curr->large) {
+                q.push(curr->large);
+            }
+        }
+    }
+    void search(Node* root,int d) {
+        if (!root) { return; }
+        Node* current = root;
+        while (current) {
+            if (d == current->data) {
+                cout << "Number: " << d << " found!\n";
+                return;
+            }
+            else if (d < current->data) {
+                current = current->small;
+            }
+            else if (d > current->data) {
+                current =  current->large;
+            }
+        }
+        
+    }
+    Node* getSuccessor(Node* root, int key) {
+        Node* current = root;
+        Node* successor = nullptr;
+        while (current) {
+            if (key < current->data) {
+                successor = current;
+                current = current->small;
+            }
+            else if (key > current->data) {
+                current = current->large;
+            }
+            else {
+                if (current->large) {
+                    return findMin(current->large);
+                }
+                break;
+            }
+        }
+        return successor;
+    }
+    Node* getPredecessor(Node* root, int key) {
+        if (!root) { return root; }
+        Node* current = root;
+        Node* predecessor = nullptr;
+        while (current) {
+            if (current->data < key) {
+                predecessor = current;
+                current = current->large;
+            }
+            else if (current->data > key) {
+                current = current->small;
+            }
+            else {
+                if (current->small) {
+                    return findMax(current->small);
+                }
+                break;
+            }
+        }
+        return predecessor;
     }
 public:
     BST() {
@@ -78,17 +175,49 @@ public:
         root = deleteNode(root, d);
     }
     void print() {
+        cout << "Inorder: ";
         inOrder(root);
+        cout << endl;
+
+        cout << "Pre Order: ";
+        preOrder(root);
+        cout << endl;
+
+        cout << "Post Order: ";
+        postOrder(root);
+        cout << endl;
+
+        cout << "BFS: ";
+        BFS(root);
+        cout << endl;
+        
+    }
+    void searchNum(int d) {
+        search(root,d);
+    }
+    void successor(int d) {
+        Node * node = getSuccessor(root, d);
+        cout << "Successor of " << d << " is: " << node->data << "\n";
+    }
+    void predecessor(int d) {
+        Node *node = getPredecessor(root, d);
+        cout << "Predecessor of " << d << " is: " << node->data << "\n";
     }
 };
 
 int main()
 {
     BST b;
-    b.push(10);
-    b.push(20);
     b.push(30);
-    b.pop(20);
+    b.push(20);
+    b.push(40);
+    b.push(15);
+    b.push(25);
+    b.push(35);
+    b.push(45);
     b.print();
+    b.searchNum(20);
+    b.successor(30);
+    b.predecessor(30);
 }
 
